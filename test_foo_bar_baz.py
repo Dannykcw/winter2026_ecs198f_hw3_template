@@ -1,52 +1,81 @@
 import pytest
+import foo_bar_baz as _m
 
-from foo_bar_baz import foo_bar_baz
+# Access the function through the module each time so monkey-patching works
+def fbz(n):
+    return _m.foo_bar_baz(n)
 
 # --- Return type ---
 
 def test_return_type():
-    assert isinstance(foo_bar_baz(5), str)
+    assert isinstance(fbz(5), str)
 
 # --- Edge cases ---
 
 def test_n_zero():
-    assert foo_bar_baz(0) == ""
+    assert fbz(0) == ""
 
 def test_n_one():
-    assert foo_bar_baz(1) == "1"
+    assert fbz(1) == "1"
+
+def test_n_negative():
+    assert fbz(-1) == ""
 
 # --- Small known sequences ---
 
+def test_n_two():
+    assert fbz(2) == "1 2"
+
 def test_n_three():
-    assert foo_bar_baz(3) == "1 2 Foo"
+    assert fbz(3) == "1 2 Foo"
+
+def test_n_four():
+    assert fbz(4) == "1 2 Foo 4"
 
 def test_n_five():
-    assert foo_bar_baz(5) == "1 2 Foo 4 Bar"
+    assert fbz(5) == "1 2 Foo 4 Bar"
+
+def test_n_six():
+    assert fbz(6) == "1 2 Foo 4 Bar Foo"
+
+def test_n_ten():
+    assert fbz(10) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar"
 
 def test_n_fifteen():
-    expected = "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz"
-    assert foo_bar_baz(15) == expected
+    assert fbz(15) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz"
+
+def test_n_twenty():
+    assert fbz(20) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz 16 17 Foo 19 Bar"
+
+def test_n_thirty():
+    assert fbz(30) == (
+        "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz "
+        "16 17 Foo 19 Bar Foo 22 23 Foo Bar 26 Foo 28 29 Baz"
+    )
+
+def test_n_forty_five():
+    assert fbz(45) == (
+        "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz "
+        "16 17 Foo 19 Bar Foo 22 23 Foo Bar 26 Foo 28 29 Baz "
+        "31 32 Foo 34 Bar Foo 37 38 Foo Bar 41 Foo 43 44 Baz"
+    )
 
 # --- Divisibility rules ---
 
 def test_divisible_by_3_only():
-    # 3 is divisible by 3 but not 5 → "Foo"
-    result = foo_bar_baz(3).split()
-    assert result[2] == "Foo"   # index 2 = number 3
+    result = fbz(3).split()
+    assert result[2] == "Foo"   # number 3
 
 def test_divisible_by_5_only():
-    # 5 is divisible by 5 but not 3 → "Bar"
-    result = foo_bar_baz(5).split()
-    assert result[4] == "Bar"   # index 4 = number 5
+    result = fbz(5).split()
+    assert result[4] == "Bar"   # number 5
 
 def test_divisible_by_both_3_and_5():
-    # 15 is divisible by both → "Baz"
-    result = foo_bar_baz(15).split()
-    assert result[14] == "Baz"  # index 14 = number 15
+    result = fbz(15).split()
+    assert result[14] == "Baz"  # number 15 — not "FooBar"
 
 def test_not_divisible_stays_as_number():
-    # 1, 2, 4, 7 are not divisible by 3 or 5
-    result = foo_bar_baz(7).split()
+    result = fbz(7).split()
     assert result[0] == "1"
     assert result[1] == "2"
     assert result[3] == "4"
@@ -55,82 +84,37 @@ def test_not_divisible_stays_as_number():
 # --- Format checks ---
 
 def test_space_delimited():
-    # tokens should equal n elements
-    result = foo_bar_baz(10)
-    tokens = result.split(" ")
+    tokens = fbz(10).split(" ")
     assert len(tokens) == 10
 
 def test_no_leading_or_trailing_spaces():
-    result = foo_bar_baz(5)
+    result = fbz(5)
     assert result == result.strip()
 
 def test_single_spaces_between_tokens():
-    result = foo_bar_baz(15)
-    # splitting on single space should give exactly n tokens
-    assert len(result.split(" ")) == 15
-
-# --- Additional exact string checks ---
-
-def test_n_two():
-    assert foo_bar_baz(2) == "1 2"
-
-def test_n_four():
-    assert foo_bar_baz(4) == "1 2 Foo 4"
-
-def test_n_six():
-    assert foo_bar_baz(6) == "1 2 Foo 4 Bar Foo"
-
-def test_n_ten():
-    assert foo_bar_baz(10) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar"
-
-def test_n_twenty():
-    expected = "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz 16 17 Foo 19 Bar"
-    assert foo_bar_baz(20) == expected
-
-# --- Larger exact string checks ---
-
-def test_n_thirty():
-    expected = (
-        "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz "
-        "16 17 Foo 19 Bar Foo 22 23 Foo Bar 26 Foo 28 29 Baz"
-    )
-    assert foo_bar_baz(30) == expected
-
-def test_n_forty_five():
-    expected = (
-        "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz "
-        "16 17 Foo 19 Bar Foo 22 23 Foo Bar 26 Foo 28 29 Baz "
-        "31 32 Foo 34 Bar Foo 37 38 Foo Bar 41 Foo 43 44 Baz"
-    )
-    assert foo_bar_baz(45) == expected
-
-# --- Negative n ---
-
-def test_n_negative():
-    assert foo_bar_baz(-1) == ""
+    assert len(fbz(15).split(" ")) == 15
 
 # --- Comprehensive named test ---
 
 def test_foo_bar_baz():
-    # Exact outputs for a range of n values
-    assert foo_bar_baz(0)  == ""
-    assert foo_bar_baz(1)  == "1"
-    assert foo_bar_baz(2)  == "1 2"
-    assert foo_bar_baz(3)  == "1 2 Foo"
-    assert foo_bar_baz(5)  == "1 2 Foo 4 Bar"
-    assert foo_bar_baz(15) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz"
-    assert foo_bar_baz(20) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz 16 17 Foo 19 Bar"
-    assert foo_bar_baz(30) == (
+    assert fbz(0)  == ""
+    assert fbz(1)  == "1"
+    assert fbz(2)  == "1 2"
+    assert fbz(3)  == "1 2 Foo"
+    assert fbz(5)  == "1 2 Foo 4 Bar"
+    assert fbz(15) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz"
+    assert fbz(20) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz 16 17 Foo 19 Bar"
+    assert fbz(30) == (
         "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz "
         "16 17 Foo 19 Bar Foo 22 23 Foo Bar 26 Foo 28 29 Baz"
     )
-    assert foo_bar_baz(45) == (
+    assert fbz(45) == (
         "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz "
         "16 17 Foo 19 Bar Foo 22 23 Foo Bar 26 Foo 28 29 Baz "
         "31 32 Foo 34 Bar Foo 37 38 Foo Bar 41 Foo 43 44 Baz"
     )
-    # "Baz" for multiples of both 3 and 5 — not "FooBar"
-    tokens = foo_bar_baz(45).split(" ")
+    # "Baz" must be used — not "FooBar" — for multiples of both 3 and 5
+    tokens = fbz(45).split(" ")
     assert tokens[14] == "Baz"   # 15
     assert tokens[29] == "Baz"   # 30
     assert tokens[44] == "Baz"   # 45
