@@ -69,6 +69,24 @@ def test_single_spaces_between_tokens():
     # splitting on single space should give exactly n tokens
     assert len(result.split(" ")) == 15
 
+# --- Additional exact string checks ---
+
+def test_n_two():
+    assert foo_bar_baz(2) == "1 2"
+
+def test_n_four():
+    assert foo_bar_baz(4) == "1 2 Foo 4"
+
+def test_n_six():
+    assert foo_bar_baz(6) == "1 2 Foo 4 Bar Foo"
+
+def test_n_ten():
+    assert foo_bar_baz(10) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar"
+
+def test_n_twenty():
+    expected = "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz 16 17 Foo 19 Bar"
+    assert foo_bar_baz(20) == expected
+
 # --- Larger input sanity check ---
 
 def test_n_thirty():
@@ -79,3 +97,23 @@ def test_n_thirty():
     assert tokens[4]  == "Bar"   # 5
     assert tokens[14] == "Baz"   # 15
     assert tokens[29] == "Baz"   # 30
+
+# --- Comprehensive named test ---
+
+def test_foo_bar_baz():
+    # Exact outputs for a range of n values
+    assert foo_bar_baz(0)  == ""
+    assert foo_bar_baz(1)  == "1"
+    assert foo_bar_baz(2)  == "1 2"
+    assert foo_bar_baz(3)  == "1 2 Foo"
+    assert foo_bar_baz(5)  == "1 2 Foo 4 Bar"
+    assert foo_bar_baz(15) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz"
+    assert foo_bar_baz(20) == "1 2 Foo 4 Bar Foo 7 8 Foo Bar 11 Foo 13 14 Baz 16 17 Foo 19 Bar"
+    # "Baz" is used for multiples of both 3 and 5 — not "FooBar"
+    tokens_30 = foo_bar_baz(30).split(" ")
+    assert tokens_30[14] == "Baz"   # 15
+    assert tokens_30[29] == "Baz"   # 30
+    # Regular numbers remain unchanged
+    assert tokens_30[0]  == "1"
+    assert tokens_30[1]  == "2"
+    assert tokens_30[6]  == "7"
