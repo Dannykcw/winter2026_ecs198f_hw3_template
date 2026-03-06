@@ -150,6 +150,30 @@ def test_single_spaces_between_tokens():
     assert len(fbz(15).split(" ")) == 15
 
 # ---------------------------------------------------------------------------
+# Large n — catches recursive implementations that hit Python's recursion limit
+# ---------------------------------------------------------------------------
+
+def test_large_n():
+    result = fbz(1500)
+    tokens = result.split(" ")
+    assert len(tokens) == 1500
+    assert tokens[0]    == "1"
+    assert tokens[2]    == "Foo"   # 3
+    assert tokens[4]    == "Bar"   # 5
+    assert tokens[14]   == "Baz"   # 15
+    assert tokens[998]  == "Foo"   # 999  (div by 3)
+    assert tokens[999]  == "Bar"   # 1000 (div by 5)
+    assert tokens[1499] == "Baz"   # 1500 (div by 15)
+
+def test_very_large_n():
+    result = fbz(10000)
+    tokens = result.split(" ")
+    assert len(tokens) == 10000
+    assert tokens[0]     == "1"
+    assert tokens[14]    == "Baz"   # 15
+    assert tokens[9999]  == "Bar"   # 10000 (10000 % 5 == 0, 10000 % 3 != 0)
+
+# ---------------------------------------------------------------------------
 # Comprehensive named test
 # ---------------------------------------------------------------------------
 
@@ -187,6 +211,13 @@ def test_foo_bar_baz():
         "31 32 Foo 34 Bar Foo 37 38 Foo Bar 41 Foo 43 44 Baz "
         "46 47 Foo 49 Bar Foo 52 53 Foo Bar 56 Foo 58 59 Baz"
     )
+    # Large n — must not hit recursion limit
+    tokens_1500 = fbz(1500).split(" ")
+    assert len(tokens_1500) == 1500
+    assert tokens_1500[1499] == "Baz"   # 1500 = 15 * 100
+    tokens_10k = fbz(10000).split(" ")
+    assert len(tokens_10k) == 10000
+    assert tokens_10k[9999] == "Bar"    # 10000 = 5 * 2000
     # "Baz" for multiples of both 3 and 5 — never "FooBar"
     tokens = fbz(60).split(" ")
     assert tokens[14] == "Baz"   # 15
